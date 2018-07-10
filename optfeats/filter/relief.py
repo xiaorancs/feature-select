@@ -6,7 +6,11 @@
 
 import numpy as np
 import pandas as pd
+import sys
 
+sys.path.append("../")
+
+from common.utils import sim_l1, sim_l2, equal, sim
 
 class Relief(object):
     '''
@@ -17,7 +21,8 @@ class Relief(object):
     给定训练集{(x1,y1),(x2,y2),...,(xm,ym)},对每一个示例xi,Relief先在xi的同类样本中寻找其最近邻xi,nh,
     称为“猜中紧邻”，再从xi的异类中寻找其最紧邻xi,nm，称为“猜错紧邻”，然后相关统计量对应属性j的分量为
     '''
-    def __init__(self,data, label, k=None, gama=None):
+    
+    def __init__(self):
         ''' 
         gama: 阈值，选择大于阈值的分量
         k: 或者选择前k的得分最大的分量
@@ -27,20 +32,6 @@ class Relief(object):
         self.data = None
         self.label = None
 
-        if isinstance(data, pd.DataFrame):
-            self.data = data.values
-        else:
-            self.data = np.array(data)
-        if isinstance(label, pd.Series)
-            self.label = label.values
-        else:
-            self.lable = np.array(label)
-
-        if len(data) != len(label):
-            raise Exception("length of input datas is not same.")
-
-        self.alldata = np.column_stack((self.data, self.label)) 
-        # self.alldata = np.concatenate((self.data, self.label))
 
 
     def _cal_near_hit(self, i, j):
@@ -50,8 +41,6 @@ class Relief(object):
         # get lable for (i,j)
         lable = self.alldata[i][-1]
         tmp_d = alldata[alldata[:,-1]==label]
-        tmp_d = 
-
         pass
 
     def get_near_miss(self, i, j):
@@ -62,16 +51,20 @@ class Relief(object):
         '''
         pass
 
-    def diff(self, a, b, category=False):
+    def diff(self, a, b, category, sim_cate=equal, sim_real=sim_l1):
         '''
-        计算a和b的距离,
-        category: 类别特征 if true, else 连续数值
+        计算a和b的距离,归一化之后的值
+            a和b是list
+        categorys: 类别特征,1
+            1: 表示是类别特征
+            0: 是实数特征
+            形如: [1,0,1,..,1] 
+        sim_cate:
+            计算类别特征的距离，默认使用的直接比较是否相等，
+        sim_real:
+            默认使用的是l1范式，建议使用归一化之后的值
         '''
-        if category:
-            return a==b
-        else: # 建议先对特征归一化，
-            return (a-b)**2
-
+        return sim(a,b,category)
 
     def get_score_by_index(self, data, lable, j):
         '''
@@ -79,7 +72,6 @@ class Relief(object):
         lable: 对应的label
         return 第j属性对应的得分的值 
         '''
-        
         pass
 
 
@@ -91,7 +83,30 @@ class Relief(object):
         return: 对应的特征的所有得分，根据属性的下标从0开始
         '''
         # 首先我们会对所有的特征归一化
+        
+        if isinstance(data, pd.DataFrame):
+            self.data = data.values
+        else:
+            self.data = np.array(data)
+        if isinstance(label, pd.Series):
+            self.label = label.values
+        else:
+            self.lable = np.array(label)
+
+        if len(data) != len(label):
+            raise Exception("length of input datas is not same.")
+
+        self.alldata = np.column_stack((self.data, self.label)) 
+        # self.alldata = np.concatenate((self.data, self.label))
         pass
 
 
 
+if __name__=="__main__":
+    relief = Relief()
+
+    a = [1,2,0,'a',3]
+    b = [1,2,1,'b',1]
+    category = [0,0,0,1,0]
+
+    print (relief.diff(a,b,category))
